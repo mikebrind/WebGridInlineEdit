@@ -1,0 +1,54 @@
+﻿body, input, textarea, select {
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+    color: #669;
+    line-height: 1.6em;
+}
+a{
+    color: #6078BF;
+}
+
+.table
+{
+	background: #fff;
+	margin: 45px;
+	border-collapse: collapse;
+	text-align: left;
+}
+.table th
+{
+	font-size: 14px;
+	font-weight: normal;
+	color: #039;
+	padding: 10px 8px;
+	border-bottom: 2px solid #6678b1;
+}
+
+.table tr{
+    height: 45px;
+    border-bottom: 1px solid #ccc;
+}
+
+.alternate{
+    background: #e6f4ff;
+}
+span{
+    padding-left: 4px;
+}
+
+.col1{
+    width:  50px;
+}
+
+.col2{
+    width:  300px;
+}
+.col3{
+    width:  160px;
+}
+.col4{
+    width:  160px;
+}
+.col5{
+    width:  160px;
+}

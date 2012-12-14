@@ -1,0 +1,108 @@
+﻿@{
+    var db = Database.Open("Books"); 
+    
+    var books = db.Query(@"SELECT b.BookId, b.Title, b.ISBN, b.AuthorId, b.CategoryId, 
+                            a.FirstName + ' ' + a.LastName AS AuthorName, c.Category  
+                            FROM Books b INNER JOIN Authors a 
+                            ON b.AuthorId = a.AuthorId  
+                            INNER JOIN Categories c 
+                            ON b.CategoryId = c.CategoryId 
+                            ORDER BY b.BookId DESC");
+                                                   
+    var categories = db.Query("SELECT CategoryId, Category FROM Categories")
+                        .Select(category => new SelectListItem {
+                            Value = category.CategoryId.ToString(), 
+                            Text = category.Category
+                         }); 
+                         
+    var authors = db.Query("SELECT AuthorId, FirstName + ' ' + LastName AS AuthorName FROM Authors")
+                        .Select(author => new SelectListItem {
+                            Value = author.AuthorId.ToString(), 
+                            Text = author.AuthorName
+                         });   
+                         
+    var grid = new WebGrid(books);                                                         
+}
+
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Inline Editing with the WebGrid</title>
+        <link rel="stylesheet" href="~/Styles/StyleSheet.css" type="text/css" />
+        <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.1.min.js" type="text/javascript"></script>
+        <script>
+            $(function () {
+                $('.edit-mode').hide();
+                $('.edit-book').on('click', function () {
+                    var tr = $(this).parents('tr:first');
+                    tr.find('.edit-mode, .display-mode').toggle();
+                });
+                $('.save-book').on('click', function () {
+                    var tr = $(this).parents('tr:first');
+                    var bookId = $(this).prop('id');
+                    var title = tr.find('#Title').val();
+                    var authorId = tr.find('#AuthorId').val();
+                    var categoryId = tr.find('#CategoryId').val();
+                    var isbn = tr.find('#ISBN').val();
+                    $.post(
+                        '/EditBook',
+                        { BookId: bookId, Title: title, AuthorId: authorId, CategoryId: categoryId, ISBN: isbn },
+                        function (book) {
+                            tr.find('#title').text(book.Title);
+                            tr.find('#authorname').text(book.AuthorName);
+                            tr.find('#category').text(book.Category);
+                            tr.find('#isbn').text(book.ISBN);
+                        }, "json");
+                    tr.find('.edit-mode, .display-mode').toggle();
+                });
+            })
+        </script>
+    </head>
+    <body>
+        @grid.GetHtml(
+            tableStyle : "table",
+            alternatingRowStyle : "alternate",
+            selectedRowStyle: "selected",
+            headerStyle : "header", 
+            columns : grid.Columns(
+                grid.Column("", 
+                            style: "col1", 
+                            format: @<text>
+                                        <button class="edit-book display-mode" id="@item.BookId">Edit</button>
+                                        <button class="save-book edit-mode" id="@item.BookId">Save</button>
+                                    </text>),
+                grid.Column("Title",
+                            style: "col2",
+                            format: @<text>
+                                        <span id="title" class="display-mode">@item.Title</span>
+                                        @Html.TextBox("Title", item.Title, new {@class="edit-mode", size = 45})
+                                    </text>),
+                grid.Column("AuthorName",
+                            header : "Author",
+                            style: "col3",
+                            format: @<text>
+                                        <span id="authorname" class="display-mode">@item.AuthorName</span>
+                                        @Html.DropDownList("AuthorId", null, authors, item.AuthorId, new {@class="edit-mode"})
+                                    </text>),
+                grid.Column("Category",
+                            style: "col4",
+                            format: @<text>
+                                        <span id="category" class="display-mode">@item.Category</span>
+                                        @Html.DropDownList("CategoryId", null, categories, item.CategoryId, new {@class="edit-mode"})
+                                    </text>),
+                grid.Column("ISBN",
+                            style: "col5",
+                            format: @<text>
+                                        <span id="isbn" class="display-mode">@item.ISBN</span>
+                                        @Html.TextBox("ISBN", item.ISBN, new {@class="edit-mode", size = 20})
+                                    </text>)
+             )    
+        )
+    </body>
+</html>
+
+

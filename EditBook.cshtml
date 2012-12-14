@@ -1,0 +1,16 @@
+﻿@{
+    var bookId = Request["BookId"];
+    var title = Request["Title"]; 
+    var authorId = Request["AuthorId"];
+    var categoryId = Request["CategoryId"];
+    var isbn = Request["ISBN"];
+    var db = Database.Open("Books");
+    var sql = "UPDATE Books SET Title = @0, AuthorId = @1, CategoryId = @2, ISBN = @3 WHERE BookId = @4";
+    db.Execute(sql, title, authorId, categoryId, isbn, bookId);
+    sql = @"SELECT b.Title, b.ISBN,  a.FirstName + ' ' + a.LastName AS AuthorName, c.Category  
+            FROM Books b INNER JOIN Authors a ON b.AuthorId = a.AuthorId  
+            INNER JOIN Categories c ON b.CategoryId = c.CategoryId 
+            WHERE BookId = @0";
+    var result = db.QuerySingle(sql, bookId);
+    Json.Write(result, Response.Output);
+}
