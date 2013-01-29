@@ -2,7 +2,7 @@
     var db = Database.Open("Books"); 
     
     var books = db.Query(@"SELECT b.BookId, b.Title, b.ISBN, b.AuthorId, b.CategoryId, 
-                            a.FirstName + ' ' + a.LastName AS AuthorName, c.Category  
+                            a.FirstName + ' ' + a.LastName AS AuthorName, c.Category, b.Hardback  
                             FROM Books b INNER JOIN Authors a 
                             ON b.AuthorId = a.AuthorId  
                             INNER JOIN Categories c 
@@ -48,14 +48,16 @@
                     var authorId = tr.find('#AuthorId').val();
                     var categoryId = tr.find('#CategoryId').val();
                     var isbn = tr.find('#ISBN').val();
+                    var hardback = tr.find('#Hardback').attr('checked') ? true : false;
                     $.post(
                         '/EditBook',
-                        { BookId: bookId, Title: title, AuthorId: authorId, CategoryId: categoryId, ISBN: isbn },
+                        { BookId: bookId, Title: title, AuthorId: authorId, CategoryId: categoryId, ISBN: isbn, Hardback: hardback },
                         function (book) {
                             tr.find('#title').text(book.Title);
                             tr.find('#authorname').text(book.AuthorName);
                             tr.find('#category').text(book.Category);
                             tr.find('#isbn').text(book.ISBN);
+                            tr.find('#hardback-display').removeAttr("disabled").attr('checked', book.Hardback).attr('disabled', true);
                         }, "json");
                     tr.find('.edit-mode, .display-mode').toggle();
                 });
@@ -99,6 +101,12 @@
                             format: @<text>
                                         <span id="isbn" class="display-mode">@item.ISBN</span>
                                         @Html.TextBox("ISBN", item.ISBN, new {@class="edit-mode", size = 20})
+                                    </text>),
+                grid.Column("Hardback",
+                            style: "col6",
+                            format: @<text>
+                                        <span class="display-mode">@Html.CheckBox("hardback-display", item.Hardback, new {disabled="disabled"})</span>
+                                        @Html.CheckBox("Hardback", item.Hardback, new {@class="edit-mode"})
                                     </text>)
              )    
         )
